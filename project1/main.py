@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 
 def clamp(value, min_val, max_val):
         return max(min(value, max_val), min_val)
@@ -11,17 +12,14 @@ class Spline:
         self.controlpoints = controlpoints
         self.u = list(range(len(self.controlpoints)))
         self.p = 3
+        self.point_count = 50
 
-    def __call__(self, segment_resolution):
-        spline = []
-        N = len(self.controlpoints)
-        for i in range(N):
-            for j in range(segment_resolution):
-                u = clamp_arr(i, self.u) + j/segment_resolution*(clamp_arr(i + 1, self.u)- clamp_arr(i, self.u))   
-                p =  self.blossom(u, i, self.p)
-                spline.append(p)
-
-        return spline
+    def __call__(self):
+        space = np.linspace(0, max(self.u), self.point_count)
+        for u in space:
+            i = next(i - 1 for i, x in enumerate(self.u) if x >= u)
+            p =  self.blossom(u, i, self.p)
+            yield p
 
     def blossom(self, u: float, i: int, r: int):
 
@@ -39,10 +37,10 @@ class Spline:
         return (x, y)
     
     def plot(self):
-        x, y = zip(*self.__call__(10))
-        plt.plot(x, y, "x-")
+        x, y = zip(*self())
+        plt.plot(x, y, "-x")
         x, y = zip(*self.controlpoints)
-        plt.plot(x, y, "*")
+        plt.plot(x, y, "o:")
         plt.show()
 
 def main():
@@ -53,6 +51,9 @@ def main():
         (1, 0),
         (2, 0),
         (1, 2),
+        (2, 2),
+        (2, 3),
+        (1, 3)
     ])
     spline.plot()
 
