@@ -1,29 +1,43 @@
-import numpy as np
-from dataclasses import dataclass
-import math
 import matplotlib.pyplot as plt
+
+def clamp(value, min_val, max_val):
+        return max(min(value, max_val), min_val)
+
+def clamp_arr(i, arr):
+     return arr[clamp(i, 0, len(arr) - 1)]
 
 class Spline:
     def __init__(self, controlpoints):
         self.controlpoints = controlpoints
         self.u = list(range(len(self.controlpoints)))
-        print(self.u)
-        # u : array , knot sequence
-        pass
+        self.p = 3
 
     def __call__(self, segment_resolution):
         spline = []
         N = len(self.controlpoints)
-        for i in range(N - 1):
-            leftmost = max(i - 1, 0)
-            rightmost = min(i + 2, N - 1)
-            points = self.controlpoints[leftmost:rightmost + 1]
+        for i in range(N):
             for j in range(segment_resolution):
-                u = self.u[i] + j/segment_resolution*(self.u[i + 1] - self.u[i])
-                a = self.alpha(u, self.u[leftmost], self.u[rightmost])
-                spline.append(self.blossom(a, points))
+                u = clamp_arr(i, self.u) + j/segment_resolution*(clamp_arr(i + 1, self.u)- clamp_arr(i, self.u))   
+                p =  self.blossom(u, i, self.p)
+                spline.append(p)
+
         return spline
 
+    def blossom(self, u: float, i: int, r: int):
+
+        if r == 0:
+            return clamp_arr(i + 1, self.controlpoints)
+        
+        den = (clamp_arr(i, self.u) - clamp_arr(i + self.p - r + 1, self.u))
+        alpha = 0 if den == 0 else (clamp_arr(i, self.u) - u)/den
+        
+        x1, y1 = self.blossom(u, i - 1, r - 1)
+        x2, y2 = self.blossom(u, i, r - 1)
+        
+        x = x1*(1 - alpha) + x2*alpha
+        y = y1*(1 - alpha) + y2*alpha
+        return (x, y)
+    
     def plot(self):
         x, y = zip(*self.__call__(10))
         plt.plot(x, y, "x-")
@@ -31,48 +45,14 @@ class Spline:
         plt.plot(x, y, "*")
         plt.show()
 
-    def blossom(self, alpha: float, points: "list[tuple[float, float]]") -> "tuple[float, float]":
-        N = len(points)
-        if N > 2:
-            split = math.floor(N/2)
-            points = [self.blossom(alpha, points[:split + 1]), self.blossom(alpha, points[split:])]
-
-        (p1x, p1y), (p2x, p2y) = points[0], points[1]
-        x = p1x*alpha + p2x*(1 - alpha)
-        y = p1y*alpha + p2y*(1 - alpha)
-        return (x, y)
-            
-
-    def alpha(self, u: float, left: float, right: float) -> float:
-        return (right - u)/(right - left)
-
-    def evaluate_basis(j,u):
-        """
-        Description
-        -----------
-        Takes as input a knot sequence u, and an index j that returns a function that
-        evaluates the j:th B-spline basis function N^3_j.
-
-        Parameters
-        -----------
-        j : int
-            index point
-        u : array
-            knot sequence
-
-        Returns
-        ------
-        evalf: lambda function?
-            Function that evaluates the j:th B-spline basis at index j
-        """
-
 def main():
     spline = Spline([
         (0, 0),
         (0, 1),
         (1, 1),
         (1, 0),
-        (0.5, 0)
+        (2, 0),
+        (1, 2),
     ])
     spline.plot()
 
