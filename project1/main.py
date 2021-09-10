@@ -9,39 +9,34 @@ def clamp_arr(i, arr):
 
 class Spline:
     def __init__(self, controlpoints, order = 3, resolution = 100):
-        self.controlpoints = controlpoints
         self.p = order
+        self.controlpoints = np.array([[*p] for p in controlpoints])
         self.u = np.arange(len(self.controlpoints))
         self.space = np.linspace(0, max(self.u), resolution)
 
     def __call__(self):
-        for u in self.space:
-            yield self.eval(u)
+        return np.array([self.eval(u) for u in self.space])
 
     def eval(self, u: float):
         i = self.u.searchsorted(u)
         return self.blossom(u, i, self.p)
 
     def blossom(self, u: float, i: int, r: int):
-
         if r == 0:
             return clamp_arr(i, self.controlpoints)
         
-        den = (clamp_arr(i - 1, self.u) - clamp_arr(i + self.p - r, self.u))
-        alpha = 0 if den == 0 else (clamp_arr(i - 1, self.u) - u)/den
-        
-        x1, y1 = self.blossom(u, i - 1, r - 1)
-        x2, y2 = self.blossom(u, i, r - 1)
-        
-        x = x1*(1 - alpha) + x2*alpha
-        y = y1*(1 - alpha) + y2*alpha
-        return (x, y)
+        denominator = (clamp_arr(i - 1, self.u) - clamp_arr(i + self.p - r, self.u))
+        alpha = (clamp_arr(i - 1, self.u) - u)/denominator if denominator != 0 else 0
+        pl = self.blossom(u, i - 1, r - 1)
+        pr = self.blossom(u, i, r - 1)
+        p = alpha*pr + (1 - alpha)*pl
+        return p
     
     def plot(self):
-        x, y = zip(*self())
-        plt.plot(x, y, "-")
-        x, y = zip(*self.controlpoints)
-        plt.plot(x, y, "o:")
+        s = self().T
+        plt.plot(s[0], s[1], "-")
+        c = self.controlpoints.T
+        plt.plot(c[0], c[1], "o:")
         plt.show()
 
 def main():
