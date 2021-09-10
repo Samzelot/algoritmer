@@ -15,8 +15,7 @@ class Spline:
         self.space = np.linspace(0, max(self.u), resolution)
 
     def __call__(self):
-        for u in self.space:
-            yield self.eval(u)
+        return np.array([self.eval(u) for u in self.space])
 
     def eval(self, u: float):
         i = self.u.searchsorted(u)
@@ -26,15 +25,15 @@ class Spline:
         if r == 0:
             return clamp_arr(i, self.controlpoints)
         
-        den = (clamp_arr(i - 1, self.u) - clamp_arr(i + self.p - r, self.u))
-        alpha = 0 if den == 0 else (clamp_arr(i - 1, self.u) - u)/den
+        denominator = (clamp_arr(i - 1, self.u) - clamp_arr(i + self.p - r, self.u))
+        alpha = (clamp_arr(i - 1, self.u) - u)/denominator if denominator != 0 else 0
         pl = self.blossom(u, i - 1, r - 1)
         pr = self.blossom(u, i, r - 1)
         p = alpha*pr + (1 - alpha)*pl
         return p
     
     def plot(self):
-        s = np.array(list(self())).T
+        s = self().T
         plt.plot(s[0], s[1], "-")
         c = self.controlpoints.T
         plt.plot(c[0], c[1], "o:")
