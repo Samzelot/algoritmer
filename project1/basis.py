@@ -45,6 +45,8 @@ def evaluate_basis(j,u_knots,p):
                 
                 a = term1 * evaluate_basis(j,u_knots, p-1)(u)
                 b = term2 * evaluate_basis(j+1,u_knots,p-1)(u)
+
+                #Fix endpoint
                 if j==len(u_knots)-1 and u==u_knots[-1]: 
                     return 1
                 return  a + b 
