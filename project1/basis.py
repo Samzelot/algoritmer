@@ -20,7 +20,7 @@ def evaluate_basis(j,u_knots,p):
 
         Returns
         ------
-        evalf: lambda function?
+        evalf: lambda function
             Function that evaluates the j:th B-spline basis at index j
         """
         
@@ -29,7 +29,7 @@ def evaluate_basis(j,u_knots,p):
             deg = 3
             current_knot_index = find_knot_index(val, u)
             
-            #start recursion if we u value is in correct knot index
+            #start recursion if the u value is in correct knot index
             if current_knot_index == j:
         """
         #recursion base
