@@ -5,7 +5,7 @@ import util
 class Spline:
     def __init__(self, controlpoints, order = 3, resolution = 100):
         self.p = order
-        self.controlpoints = np.array([[*p] for p in controlpoints])
+        self.controlpoints = np.asarray(controlpoints)
         self.u_knots = np.arange(len(self.controlpoints))
         self.space = np.linspace(0, self.u_knots[-1], resolution)
 
@@ -28,10 +28,8 @@ class Spline:
         return p
 
     def plot(self):
-        s = self().T
-        plt.plot(s[0], s[1], "-")
-        c = self.controlpoints.T
-        plt.plot(c[0], c[1], "o:")
+        plt.plot(*self().T, "-")
+        plt.plot(*self.controlpoints.T, "o:")
         plt.show()
 
 def main():
