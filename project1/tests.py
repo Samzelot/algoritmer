@@ -5,8 +5,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 class TestSpline(unittest.TestCase): 
+    
 
     def test_spline_basis(self):
+        '''Description: 
+        Tests if the de Boor algorithm gives the same spline as the d_i*N method.
+        '''
         spline = sp.Spline([
             (-12.73564, 9.03455),
             (-26.77725, 15.89208),
@@ -37,12 +41,15 @@ class TestSpline(unittest.TestCase):
         spline_points = spline()
         test_array=[]
         for i, u in enumerate(spline.space):
-            s_val = basis.evaluate_spline_basis(spline.u_knots.searchsorted(u), u, spline.u_knots, spline.controlpoints, spline.p)
+            s_val = basis.evaluate_spline_basis(spline.u_knots.searchsorted(u), u, spline.u_knots, spline.controlpoints, spline.p) 
             test_array.append(s_val)
             self.assertAlmostEqual(spline_points[i][0], s_val[0])
             self.assertAlmostEqual(spline_points[i][1], s_val[1])
 
     def test_basis_sum_to_one(self):
+        '''Description: 
+        Tests if all the spline basis functions sums to 1.
+        '''
         u_knots = np.arange(10)
         sum_n = lambda u: sum([basis.evaluate_basis(i-2, u_knots, 3)(u) for i in range(len(u_knots)+2)])
         for j in np.linspace(0,9,50):

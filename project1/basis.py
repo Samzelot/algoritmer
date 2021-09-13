@@ -15,7 +15,7 @@ def evaluate_basis(j,u_knots,p):
             index point
         u_knots : array
             knot sequence
-        k : int
+        p : int
             current degree
 
         Returns
@@ -24,14 +24,6 @@ def evaluate_basis(j,u_knots,p):
             Function that evaluates the j:th B-spline basis at index j
         """
         
-        """
-        for val in u:
-            deg = 3
-            current_knot_index = find_knot_index(val, u)
-            
-            #start recursion if the u value is in correct knot index
-            if current_knot_index == j:
-        """
         #recursion base
         if p == 0:
             return lambda u: (1 if util.clamp_arr(j-1,u_knots) <= u < util.clamp_arr(j,u_knots) else 0)
@@ -63,7 +55,7 @@ def create_interval(j):
 
     Returns
     ------
-    interval from j-2 to j+1
+    interval from j-3 to j+1
     """
     return np.arange(j-3, j+1)
         
