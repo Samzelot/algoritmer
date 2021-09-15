@@ -45,12 +45,29 @@ class Spline:
         p = alpha*pr + (1 - alpha)*pl
         return p
 
-    def plot(self):
+    def plot(self, mark = None):
         '''Description: 
         Plots the spline.
         '''
+        #Spline/Controlpoints
         plt.plot(*self().T, "-")
         plt.plot(*self.controlpoints.T, "o:")
+
+        #Plot lines around marked point
+        if mark is None:
+            mark = self.u_knots[round(len(self.u_knots)/2)]
+        i = self.u_knots.searchsorted(mark)
+        plt.plot(*np.asarray([
+            self._blossom(mark, i, 1),
+            self._blossom(mark, i - 1, 1),
+            self._blossom(mark, i - 2, 1)
+            ]).T, "bx:")
+        plt.plot(*np.asarray(
+            [self._blossom(mark, i, 2),
+             self._blossom(mark, i - 1, 2)]
+            ).T, "g-x")
+        plt.plot(*self._blossom(mark, i, 3), "rx")
+
         plt.show()
 
 def main():
@@ -65,7 +82,7 @@ def main():
         (2, 3),
         (1, 3)
     ])
-    spline.plot()
+    spline.plot(mark=4)
 
 if __name__ == "__main__":
     main()
