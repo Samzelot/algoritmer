@@ -8,11 +8,11 @@ import matplotlib.pyplot as plt
 import itertools as iter
 
 def main():
-    #f = lambda x: 100*(x[1]-x[0]**2)**2 + (1-x[0])**2
-    f = lambda x: np.sum((x)**2)
+    f = lambda x: 100*(x[1]-x[0]**2)**2 + (1-x[0])**2
+    #f = lambda x: np.sum((x)**2)
     problem = Problem(f)
-    line_solver = QuasiNewtonMethod(FiniteDifferenceHessian(1e-5), DefaultStep(), 'cauchy', 1e-5, 1e-5)
-    solver = QuasiNewtonMethod(FiniteDifferenceHessian(1e-5), ExactLineStep(line_solver, 1e-5), 'cauchy', 1e-5, 1e-5)
+    line_solver = QuasiNewtonMethod(FiniteDifferenceHessian(1e-2), DefaultStep(), 'cauchy', 1e-5, 1e-5)
+    solver = QuasiNewtonMethod(FiniteDifferenceHessian(1e-2), ExactLineStep(line_solver, 1e-5), 'cauchy', 1e-5, 1e-5)
     val, points = solver.solve(problem, np.array([0, -0.75]), debug=True)
     plot_countour(f, 100, -0.5, 2, -1.5, 4)
     plt.plot(*np.asarray(points).T, ".")

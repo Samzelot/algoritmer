@@ -13,7 +13,6 @@ class FiniteDifferenceHessian(HessianStrategy):
         self.finite_differences_step = finite_differences_step
 
     def hessian(self, problem, x):
-
         f = problem.f
         n = x.shape[0] #x is a n dimensional vector (initial guess)
         H = np.zeros((n,n)) # Hessian matrix H to store approximations

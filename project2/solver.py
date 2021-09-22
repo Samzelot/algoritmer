@@ -28,11 +28,9 @@ class QuasiNewtonMethod(Solver):
         x = guess
         for i in range(iters):
             H_inv = self.hessian_strategy.hessian(problem, x)
-                
             s = -H_inv@g(x) # calculate the next step
-
             new_x = self.step_strategy.step(problem, x, s)
-
+            
             if debug:
                 print(f'iter {i}, stepped to {new_x}')
                 points.append(new_x)

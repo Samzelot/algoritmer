@@ -16,16 +16,17 @@ class DefaultStep(StepStrategy):
 
 class ExactLineStep(StepStrategy):
     def __init__(self, line_solver, finite_differences_step):
-        self.line_solver = QuasiNewtonMethod(FiniteDifferenceHessian(1e-5), DefaultStep(), 'cauchy', 1e-5, 1e-5)
+        self.line_solver = line_solver
         self.finite_differences_step = finite_differences_step
 
     def step(self, problem, x, s):
         f_line_x = lambda alpha: x + alpha*s
-        problem = Problem(
+        line_problem = Problem(
             lambda alpha: problem.f(f_line_x(alpha)),
-            #lambda alpha: problem.g(self.finite_differences_step)(f_line_x(alpha))@s/np.linalg.norm(s),
+            #TODO this is not working! why? creates singular hessian after a while
+            #lambda alpha: np.array([problem.g(self.finite_differences_step)(f_line_x(alpha))@s/np.linalg.norm(s)]),
         )
-        alpha = self.line_solver.solve(problem, np.array([1]))
+        alpha = self.line_solver.solve(line_problem, np.array([1]))
         return f_line_x(alpha)
 
 class InexactLineStep(StepStrategy):
