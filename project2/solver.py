@@ -3,7 +3,7 @@ import scipy.linalg as sl
 from scipy.optimize import approx_fprime
 from abc import abstractmethod, ABC
 
-class Solver(ABC):
+class Solver(ABC): 
     
     @abstractmethod
     def solve(self, f):
