@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-from project2.hessianstrategies import FiniteDifferenceHessian
-from project2.solver import QuasiNewtonMethod
+from hessianstrategies import FiniteDifferenceHessian
+from solver import QuasiNewtonMethod
 import numpy as np
 from problem import Problem
 from scipy.optimize import approx_fprime

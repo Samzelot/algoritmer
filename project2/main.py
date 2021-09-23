@@ -16,10 +16,8 @@ def main():
     params = GlobalParams(1e-5)
     hessian = FiniteDifferenceHessian()
     stop = CauchyStopping(1e-5)
-
     line_solver = QuasiNewtonMethod(hessian, DefaultStep(), stop, params)
     solver = QuasiNewtonMethod(hessian, ExactLineStep(line_solver), stop, params)
-
     val, points = solver.solve(problem, np.array([0, -0.75]), debug=True)
     plot_countour(f, 100, -0.5, 2, -1.5, 4)
     plt.plot(*np.asarray(points).T, ".")
