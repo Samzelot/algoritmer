@@ -20,10 +20,12 @@ class FiniteDifferenceHessian(HessianStrategy):
             for j in range(n):
                 H[i, j] = (f(x+e[i]*h+e[j]*h)-f(x+e[i]*h)-f(x+e[j]*h)+f(x))/h**2
             
+
         if sl.det(H) == 0: # Check if determinant is zero
-            raise ValueError("Hessian matrix is singular")
+            raise RuntimeError("Hessian was singular")
 
         H = 1/2*(H + H.T) # Symmetric step
+
         H_inv = np.linalg.inv(H)
         return H_inv
 

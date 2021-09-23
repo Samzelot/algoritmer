@@ -1,13 +1,13 @@
 
-from stoppingstrategies import CauchyStopping, ResidualStopping
+from stoppingstrategies import *
 from problem import Problem
-from solver import GlobalParams, QuasiNewtonMethod
+from solver import *
 from stepstrategies import *
 from hessianstrategies import *
 import numpy as np
 import matplotlib.pyplot as plt
 import itertools as iter
-
+from chebyquad_problem import chebyquad, gradchebyquad
 
 class LoggingHessian(HessianStrategy):
 
@@ -27,18 +27,36 @@ class LoggingHessian(HessianStrategy):
         return self.log
 
 def main():
-    #f = lambda x: 100*(x[1]-x[0]**2)**2 + (1-x[0])**2
-    f = lambda x: x[0]**2 + x[1]**2
-    g = lambda x: np.array([2*x[0], 2*x[1]])
-    problem = Problem(f, g)
+    task_10()
+
+def task_10():
+
+    #Problem
+    problem = Problem(chebyquad, gradchebyquad)
+
+    #Solution
+    hessian = FiniteDifferenceHessian()
+    params = GlobalParams(finite_difference_step=1e-5)
+    stop = ResidualStopping(1e-5)
+    line_solver = QuasiNewtonSolver(hessian, DefaultStep(), stop, params)
+    solver = QuasiNewtonSolver(hessian, ExactLineStep(line_solver), stop, params)
+    guess  = np.array([0, 1])
+    val, points = solver.solve(problem, guess, debug=True)
+    print(f'min_coord: {val}, min_val: {chebyquad(val)}')
+
+def task_5():
+    f = lambda x: 100*(x[1]-x[0]**2)**2 + (1-x[0])**2
+    #f = lambda x: x[0]**2 + x[1]**2
+    #g = lambda x: np.array([2*x[0], 2*x[1]])
+    problem = Problem(f)
 
     hessian = FiniteDifferenceHessian()
     params = GlobalParams(1e-5)
     stop = CauchyStopping(1e-5)
-    line_solver = QuasiNewtonMethod(hessian, DefaultStep(), stop, params)
-    solver = QuasiNewtonMethod(hessian, ExactLineStep(line_solver), stop, params)
+    line_solver = QuasiNewtonSolver(hessian, DefaultStep(), stop, params)
+    solver = QuasiNewtonSolver(hessian, InexactLineStep(), stop, params)
 
-    val, points = solver.solve(problem, np.array([1, -0.75]), debug=True)
+    val, points = solver.solve(problem, np.array([0, -0.75]), debug=True)
     plot_countour(f, 100, -0.5, 2, -1.5, 4)
     plt.plot(*np.asarray(points).T, ".")
     plt.show()
