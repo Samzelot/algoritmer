@@ -12,7 +12,7 @@ def main():
     #f = lambda x: np.sum((x)**2)
     problem = Problem(f)
     line_solver = QuasiNewtonMethod(FiniteDifferenceHessian(1e-2), DefaultStep(), 'cauchy', 1e-5, 1e-5)
-    solver = QuasiNewtonMethod(FiniteDifferenceHessian(1e-2), ExactLineStep(line_solver, 1e-5), 'cauchy', 1e-5, 1e-5)
+    solver = QuasiNewtonMethod(DFP_rank_2_Hessian(1e-2), ExactLineStep(line_solver, 1e-5), 'cauchy', 1e-5, 1e-5)
     val, points = solver.solve(problem, np.array([0, -0.75]), debug=True)
     plot_countour(f, 100, -0.5, 2, -1.5, 4)
     plt.plot(*np.asarray(points).T, ".")
