@@ -5,19 +5,17 @@ import scipy.linalg as sl
 
 class HessianStrategy(ABC):
     @abstractmethod
-    def hessian(self, problem, x):
+    def hessian(self, problem, globals, x):
         return
 
 class FiniteDifferenceHessian(HessianStrategy):
-    def __init__(self, finite_differences_step):
-        self.finite_differences_step = finite_differences_step
 
-    def hessian(self, problem, x):
+    def hessian(self, problem, globals, x):
         f = problem.f
         n = x.shape[0] #x is a n dimensional vector (initial guess)
         H = np.zeros((n,n)) # Hessian matrix H to store approximations
         e=np.eye(n) #create basis vectors
-        h=self.finite_differences_step
+        h=globals.finite_difference_step
         for i in range(n): # Loop through Hessian matrix entries and approximate entries
             for j in range(n):
                 H[i, j] = (f(x+e[i]*h+e[j]*h)-f(x+e[i]*h)-f(x+e[j]*h)+f(x))/h**2
@@ -31,12 +29,10 @@ class FiniteDifferenceHessian(HessianStrategy):
 
 
 class GoodBroydenHessian(HessianStrategy):
-    def __init__(self, finite_differences_step):
-        self.finite_differences_step = finite_differences_step
-        
-    def hessian(self, problem, x):
+
+    def hessian(self, problem, globals, x):
         f = problem.f
-        g = problem.g(self.finite_differences_step)
+        g = problem.g(globals.finite_difference_step)
 
         try:
             delta= x - self.x_last
@@ -46,18 +42,15 @@ class GoodBroydenHessian(HessianStrategy):
             self.H_last = H
             return H
         except AttributeError:
-            exact = FiniteDifferenceHessian(self.finite_differences_step)
-            self.H_last = exact.hessian(problem, x)
+            exact = FiniteDifferenceHessian()
+            self.H_last = exact.hessian(problem, globals, x)
             self.x_last = x
             return self.H_last
             
 class BadBroydenHessian(HessianStrategy):
-    def __init__(self, finite_differences_step):
-        self.finite_differences_step = finite_differences_step
-        
-    def hessian(self, problem, x):
+    def hessian(self, problem, globals, x):
         f = problem.f
-        g = problem.g(self.finite_differences_step)
+        g = problem.g(globals.finite_difference_step)
 
         try:
             delta= x - self.x_last
@@ -67,18 +60,15 @@ class BadBroydenHessian(HessianStrategy):
             self.H_last = H
             return H
         except AttributeError:
-            exact = FiniteDifferenceHessian(self.finite_differences_step)
-            self.H_last = exact.hessian(problem, x)
+            exact = FiniteDifferenceHessian()
+            self.H_last = exact.hessian(problem, globals, x)
             self.x_last = x
             return self.H_last
 
 class SymmetricHessian(HessianStrategy):
-    def __init__(self, finite_differences_step):
-        self.finite_differences_step = finite_differences_step
-        
-    def hessian(self, problem, x):
+    def hessian(self, problem, globals, x):
         f = problem.f
-        g = problem.g(self.finite_differences_step)
+        g = problem.g(globals.finite_difference_step)
 
         try:
             delta= x - self.x_last
@@ -90,18 +80,15 @@ class SymmetricHessian(HessianStrategy):
             self.H_last = H
             return H
         except AttributeError:
-            exact = FiniteDifferenceHessian(self.finite_differences_step)
-            self.H_last = exact.hessian(problem, x)
+            exact = FiniteDifferenceHessian()
+            self.H_last = exact.hessian(problem, globals, x)
             self.x_last = x
             return self.H_last
 
 class DFP_rank_2_Hessian(HessianStrategy):
-    def __init__(self, finite_differences_step):
-        self.finite_differences_step = finite_differences_step
-        
-    def hessian(self, problem, x):
+    def hessian(self, problem, globals, x):
         f = problem.f
-        g = problem.g(self.finite_differences_step)
+        g = problem.g(globals.finite_differences_step)
 
         try:
             delta= x - self.x_last
@@ -114,8 +101,8 @@ class DFP_rank_2_Hessian(HessianStrategy):
             self.H_last = H
             return H
         except AttributeError:
-            exact = FiniteDifferenceHessian(self.finite_differences_step)
-            self.H_last = exact.hessian(problem, x)
+            exact = FiniteDifferenceHessian()
+            self.H_last = exact.hessian(problem, globals, x)
             self.x_last = x
             return self.H_last
 #TODO: add DFP rank-2 update
