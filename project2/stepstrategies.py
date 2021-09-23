@@ -41,30 +41,19 @@ class InexactLineStep(StepStrategy):
         
         while not self.armijo_condition(phi, phi_prime, alpha_minus): # Armijo rule: alpha_minus
             alpha_minus = alpha_minus/2
-            #print(f"phi_prime: {phi_prime(0)}")
-            #print(f" {phi(alpha_minus)} <= {phi(0)+sigma_val*alpha_minus*phi_prime(0)}")
-            #print(alpha_minus)
-            #print("firstWhile")
 
         alpha_plus = alpha_minus
 
         while self.armijo_condition(phi, phi_prime, alpha_plus): # Armijo rule: alpha_plus
             alpha_plus = 2*alpha_plus
-            #print("secondtWhile")
         
         while not self.other_condition(phi, phi_prime, alpha_minus) and abs(alpha_minus - alpha_plus) > 1e-4: # condition 2 from slides :)
             alpha_0 = (alpha_plus + alpha_minus)/2
-            #print(f'- = {alpha_minus}, + = {alpha_plus}, 0 = {alpha_0}, phi_prime(alpha_minus) = {phi_prime(alpha_minus)}, phi_prime(0) = {phi_prime(0)*self.rho}')
-            #print("thirdWhile")
             if self.armijo_condition(phi, phi_prime, alpha_0): # Armijo rule: alpha_0
                 alpha_minus = alpha_0
-                #print("set plus")
             else:
-                #print("set minus")
                 alpha_plus = alpha_0
-        # alpha_minus is the inexact line search variable
-        
-        #print(f"{alpha_minus}")
+
         return x + alpha_minus*s
     
     def armijo_condition(self, phi, phi_prime, alpha):

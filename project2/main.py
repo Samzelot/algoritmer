@@ -1,5 +1,5 @@
 
-from project2.stoppingstrategies import CauchyStopping, ResidualStopping
+from stoppingstrategies import CauchyStopping, ResidualStopping
 from problem import Problem
 from solver import GlobalParams, QuasiNewtonMethod
 from stepstrategies import *
@@ -27,15 +27,15 @@ class LoggingHessian(HessianStrategy):
         return self.log
 
 def main():
-    f = lambda x: 100*(x[1]-x[0]**2)**2 + (1-x[0])**2
-    #f = lambda x: np.sum((x)**2, )
+    #f = lambda x: 100*(x[1]-x[0]**2)**2 + (1-x[0])**2
+    f = lambda x: np.sum((x)**2, )
     problem = Problem(f) #TODO make gradient work
 
     hessian = LoggingHessian()
     params = GlobalParams(1e-5)
     stop = ResidualStopping(1e-5)
     solver = QuasiNewtonMethod(hessian, DefaultStep(), stop, params)
-    val, points = solver.solve(problem, np.array([0, -0.75]), debug=True)
+    val, points = solver.solve(problem, np.array([0, -.01]), debug=True)
     plot_countour(f, 100, -0.5, 2, -1.5, 4)
     plt.plot(*np.asarray(points).T, ".")
     plt.show()
