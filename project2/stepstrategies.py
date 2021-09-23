@@ -7,36 +7,33 @@ from scipy.optimize import approx_fprime
 
 class StepStrategy(ABC):
     @abstractmethod
-    def step(self, problem, x, s):
+    def step(self, problem, globals, x, s):
         return
 
 class DefaultStep(StepStrategy):
-    def step(self, problem, x, s):
+    def step(self, _1, _2, x, s):
         return x + s
 
 class ExactLineStep(StepStrategy):
-    def __init__(self, line_solver, finite_differences_step):
+    def __init__(self, line_solver):
         self.line_solver = line_solver
-        self.finite_differences_step = finite_differences_step
 
-    def step(self, problem, x, s):
+    def step(self, problem, _, x, s):
         f_line_x = lambda alpha: x + alpha*s
         line_problem = Problem(
             lambda alpha: problem.f(f_line_x(alpha)),
-            #TODO this is not working! why? creates singular hessian after a while
-            #lambda alpha: np.array([problem.g(self.finite_differences_step)(f_line_x(alpha))@s/np.linalg.norm(s)]),
+            #lambda alpha: np.array([problem.g(self.line_solver.global_params.finite_difference_step)(f_line_x(alpha))@s/np.linalg.norm(s)]),
         )
         alpha = self.line_solver.solve(line_problem, np.array([1]))
         return f_line_x(alpha)
 
 class InexactLineStep(StepStrategy):
-    def __init__(self, finite_differences_step):
-        self.finite_differences_step = finite_differences_step
+    def __init__(self):
         self.sigma = np.linspace(0, 1/2)
 
-    def step(self, problem, x,s):
+    def step(self, problem, globals, x, s):
         phi = lambda alpha: problem.f(x + alpha*s) # phi
-        phi_prime = lambda alpha: problem.g(self.finite_differences_step)(x + alpha*s)@s/np.linalg.norm(s) # phi prime calculation
+        phi_prime = lambda alpha: problem.g(globals.finite_difference_step)(x + alpha*s)@s/np.linalg.norm(s) # phi prime calculation
         alpha_minus = 1 # random alpha minus start
         
         for sigma_val in self.sigma: # loop through sigma values
