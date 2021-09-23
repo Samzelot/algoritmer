@@ -32,29 +32,37 @@ class ExactLineStep(StepStrategy):
 class InexactLineStep(StepStrategy):
     def __init__(self, finite_differences_step):
         self.finite_differences_step = finite_differences_step
-        self.sigma = np.linspace(0, 1/2)
+        self.sigma = np.linspace(0.2, 1/2-0.01,50)
 
     def step(self, problem, x,s):
         phi = lambda alpha: problem.f(x + alpha*s) # phi
-        phi_prime = lambda alpha: problem.g(self.finite_differences_step)(x + alpha*s)@s/np.linalg.norm(s) # phi prime calculation
-        alpha_minus = 1 # random alpha minus start
+        #phi_prime = lambda alpha: problem.g(self.finite_differences_step)(x + alpha*s)@s/np.linalg.norm(s) # phi prime calculation
+        phi_prime = lambda alpha : approx_fprime(x+ alpha*s, problem.f, self.finite_differences_step)@(s/np.linalg.norm(s)) 
+        alpha_minus = 3 # random alpha minus start
         
         for sigma_val in self.sigma: # loop through sigma values
             while phi(alpha_minus) <= phi(0)+sigma_val*alpha_minus*phi_prime(0): # Armijo rule: alpha_minus
                 alpha_minus = alpha_minus/2
+                #print(f"phi_prime: {phi_prime(0)}")
+                #print(f" {phi(alpha_minus)} <= {phi(0)+sigma_val*alpha_minus*phi_prime(0)}")
+                #print(alpha_minus)
+                #print("firstWhile")
             alpha_plus = alpha_minus
 
             while phi(alpha_plus) <= phi(0) + sigma_val*alpha_plus*phi_prime(0): # Armijo rule: alpha_plus
                 alpha_plus = 2*alpha_plus
+                #print("secondtWhile")
             
-            for p_val in (np.linspace(sigma_val,1,200)): # loop through alpha values
-                while phi_prime(alpha_minus) >= p_val*phi_prime(0): # condition 2 from slides :)
+            for p_val in (np.linspace(sigma_val,1-0.01,50)): # loop through alpha values
+                while not phi_prime(alpha_minus) >= p_val*phi_prime(0): # condition 2 from slides :)
                     alpha_0 = (alpha_plus + alpha_minus)/2
-
+                    #print("thirdWhile")
                     if phi(alpha_0) <= phi(0) + sigma_val*alpha_0*phi_prime(0): # Armijo rule: alpha_0
                         alpha_minus = alpha_0
                     else:
                         alpha_plus = alpha_0
         # alpha_minus is the inexact line search variable
-
+        
+        time.sleep(1)
+        print(f"{alpha_minus}")
         return x + alpha_minus*s
