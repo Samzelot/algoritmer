@@ -46,4 +46,4 @@ class QuasiNewtonMethod(Solver):
 
             x = new_x
 
-        raise RuntimeError("Maximum number of itrerations exceeded", points)
+        raise RuntimeError("Maximum number of itrerations exceeded")

@@ -88,7 +88,7 @@ class SymmetricHessian(HessianStrategy):
 class DFP_rank_2_Hessian(HessianStrategy):
     def hessian(self, problem, globals, x):
         f = problem.f
-        g = problem.g(globals.finite_differences_step)
+        g = problem.g(globals.finite_difference_step)
 
         try:
             delta= x - self.x_last
@@ -105,5 +105,6 @@ class DFP_rank_2_Hessian(HessianStrategy):
             self.H_last = exact.hessian(problem, globals, x)
             self.x_last = x
             return self.H_last
+
 #TODO: add DFP rank-2 update
 #TODO: add BFGS rank-2 update            
