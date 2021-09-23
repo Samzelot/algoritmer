@@ -23,7 +23,9 @@ class ExactLineStep(StepStrategy):
         f_line_x = lambda alpha: x + alpha*s
         line_problem = Problem(
             lambda alpha: problem.f(f_line_x(alpha)),
-            #lambda alpha: np.array([problem.g(self.line_solver.global_params.finite_difference_step)(f_line_x(alpha))@s/np.linalg.norm(s)]),
+            lambda alpha: np.atleast_1d(
+                [problem.g(self.line_solver.global_params.finite_difference_step)(f_line_x(alpha))@s/np.linalg.norm(s)]
+            ),
         )
         alpha = self.line_solver.solve(line_problem, np.array([1]))
         return f_line_x(alpha)
