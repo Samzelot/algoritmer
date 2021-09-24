@@ -27,6 +27,8 @@ class LoggingHessian(HessianStrategy):
         return self.log
 
 def main():
+    #TODO
+    #Need to handle singular matrices
     task_10()
 
 def task_10():
@@ -37,10 +39,10 @@ def task_10():
     #Solution
     hessian = FiniteDifferenceHessian()
     params = GlobalParams(finite_difference_step=1e-5)
-    stop = ResidualStopping(1e-5)
+    stop = ResidualStopping(error=1e-5)
     line_solver = QuasiNewtonSolver(hessian, DefaultStep(), stop, params)
     solver = QuasiNewtonSolver(hessian, ExactLineStep(line_solver), stop, params)
-    guess  = np.array([0, 1])
+    guess  = np.array([0, 1]) + 0.01
     val, points = solver.solve(problem, guess, debug=True)
     print(f'min_coord: {val}, min_val: {chebyquad(val)}')
 
