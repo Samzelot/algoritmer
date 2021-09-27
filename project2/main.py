@@ -42,7 +42,7 @@ def task_10():
     stop = ResidualStopping(error=1e-5)
     line_solver = QuasiNewtonSolver(hessian, DefaultStep(), stop, params)
     solver = QuasiNewtonSolver(hessian, ExactLineStep(line_solver), stop, params)
-    guess  = np.array([0, 1]) + 0.01
+    guess  = np.array([0, 1, 2, 3]) + 0.01
     val, points = solver.solve(problem, guess, debug=True)
     print(f'min_coord: {val}, min_val: {chebyquad(val)}')
 
