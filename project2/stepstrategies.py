@@ -9,11 +9,11 @@ def get_line_problem(problem, finite_difference_step, x, s):
     f_line_x = lambda alpha: x + alpha*s
     return Problem(
         lambda alpha: problem.f(f_line_x(alpha)),
-        lambda alpha: np.atleast_1d(
-            [problem.g(finite_difference_step)(f_line_x(alpha))@s/np.linalg.norm(s)]
-        ),
+        #lambda alpha: np.atleast_1d(
+        #    [problem.g(finite_difference_step)(f_line_x(alpha))@s/np.linalg.norm(s)]
+        #)
     )
-
+    
 class StepStrategy(ABC):
     @abstractmethod
     def step(self, problem, globals, x, s):

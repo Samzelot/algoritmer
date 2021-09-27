@@ -9,7 +9,7 @@ class GlobalParams:
 class Solver(ABC): 
     
     @abstractmethod
-    def solve(self, f):
+    def solve(self, problem, guess, iters, debug):
         pass
 
 class QuasiNewtonSolver(Solver):

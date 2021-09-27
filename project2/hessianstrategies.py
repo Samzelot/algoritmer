@@ -33,7 +33,7 @@ class GoodBroydenHessian(HessianStrategy):
         f = problem.f
         g = problem.g(globals.finite_difference_step)
 
-        try:
+        if hasattr(self, 'x_last'):
             delta= x - self.x_last
             gamma= g(x) - g(self.x_last)
             H =self.H_last+np.outer((delta-self.H_last@gamma)/(delta@self.H_last@gamma),delta)@self.H_last
@@ -41,13 +41,13 @@ class GoodBroydenHessian(HessianStrategy):
             self.H_last = H
             self.x_last = x
             return H
-        except AttributeError:
+        else:
             exact = FiniteDifferenceHessian()
             self.H_last = exact.hessian(problem, globals, x)
             self.x_last = x
             return self.H_last
             
-class BadBroydenHessian(HessianStrategy):
+class BadBroydenHessian(HessianStrategy): #TODO fix
     def hessian(self, problem, globals, x):
         f = problem.f
         g = problem.g(globals.finite_difference_step)
@@ -66,7 +66,7 @@ class BadBroydenHessian(HessianStrategy):
             self.x_last = x
             return self.H_last
 
-class SymmetricHessian(HessianStrategy):
+class SymmetricHessian(HessianStrategy): #TODO fix
     def hessian(self, problem, globals, x):
         f = problem.f
         g = problem.g(globals.finite_difference_step)

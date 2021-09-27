@@ -31,6 +31,29 @@ def main():
     #Need to handle singular matrices
     task_10()
 
+def task_12():
+    #Problem
+    f = lambda x: 100*(x[1]-x[0]**2)**2 + (1-x[0])**2
+
+    #Solution
+    problem = Problem(f) 
+    hessian = LoggingHessian()
+    params = GlobalParams(1e-5)
+    stop = CauchyStopping(1e-3)
+    line_solver = QuasiNewtonSolver(FiniteDifferenceHessian(), DefaultStep(), stop, params)
+    solver = QuasiNewtonSolver(hessian, ExactLineStep(line_solver), stop, params)
+    val, points = solver.solve(problem, np.array([0, -0.75]), debug=True)
+    diff_hessians=[]
+    for i in range(len(hessian.get_log())):
+        diff_hessians.append(sum(sum(abs(hessian.get_log()[i][0]-hessian.get_log()[i][1]))))
+    plt.figure(1)
+    plt.plot(diff_hessians)
+
+    plt.figure(2)
+    plot_countour(f, 100, -0.5, 2, -1.5, 4)
+    plt.plot(*np.asarray(points).T, ".")
+    plt.show()
+    
 def task_10():
 
     #Problem
@@ -39,25 +62,35 @@ def task_10():
     #Solution
     hessian = FiniteDifferenceHessian()
     params = GlobalParams(finite_difference_step=1e-5)
-    stop = ResidualStopping(error=1e-5)
+    stop = CauchyStopping(error=1e-3)
     line_solver = QuasiNewtonSolver(hessian, DefaultStep(), stop, params)
     solver = QuasiNewtonSolver(hessian, ExactLineStep(line_solver), stop, params)
-    guess  = np.array([0, 1, 2, 3]) + 0.01
+    guess  = np.linspace(0,1,11)
     val, points = solver.solve(problem, guess, debug=True)
     print(f'min_coord: {val}, min_val: {chebyquad(val)}')
 
 def task_5():
     f = lambda x: 100*(x[1]-x[0]**2)**2 + (1-x[0])**2
-    #f = lambda x: x[0]**2 + x[1]**2
-    #g = lambda x: np.array([2*x[0], 2*x[1]])
+    problem = Problem(f)
+
+    hessian = DFP_rank_2_Hessian()
+    params = GlobalParams(1e-5)
+    stop = CauchyStopping(1e-5)
+    line_solver = QuasiNewtonSolver(hessian, DefaultStep(), stop, params)
+    solver = QuasiNewtonSolver(hessian, DefaultStep(), stop, params)
+    val, points = solver.solve(problem, np.array([0, -0.75]), debug=True)
+    plot_countour(f, 100, -0.5, 2, -1.5, 4)
+    plt.plot(*np.asarray(points).T, ".")
+    plt.show()
+
+def task_7():
+    f = lambda x: 100*(x[1]-x[0]**2)**2 + (1-x[0])**2
     problem = Problem(f)
 
     hessian = FiniteDifferenceHessian()
     params = GlobalParams(1e-5)
     stop = CauchyStopping(1e-5)
-    line_solver = QuasiNewtonSolver(hessian, DefaultStep(), stop, params)
-    solver = QuasiNewtonSolver(hessian, InexactLineStep(), stop, params)
-
+    solver = QuasiNewtonSolver(hessian, InexactLineStep(0.1, 0.01), stop, params)
     val, points = solver.solve(problem, np.array([0, -0.75]), debug=True)
     plot_countour(f, 100, -0.5, 2, -1.5, 4)
     plt.plot(*np.asarray(points).T, ".")
