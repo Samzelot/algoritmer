@@ -40,8 +40,8 @@ def aa(width,height,h):
             
 def main():
 
-    w = 40
-    h = 80
+    w = 20
+    h = 20
     room = Room(w, h, 1/(h - 1))
 
     lower, upper, left, right = np.zeros(w), np.zeros(w), np.zeros(h), np.zeros(h)
@@ -51,10 +51,10 @@ def main():
     right[10:40] = -1
 
     boundaries = [
-        {"type": "dirichlet", "side": Side.LEFT, "start": 0, "end": h, "values": left},
-        {"type": "dirichlet", "side": Side.RIGHT, "start": 0, "end": h, "values": right},
-        {"type": "dirichlet", "side": Side.UPPER, "start": 0, "end": w, "values": upper},
-        {"type": "dirichlet", "side": Side.LOWER, "start": 0, "end": w, "values": lower},
+        {"type": "neumann", "side": Side.UPPER, "start": 0, "end": w, "values": 20*np.ones(w)},
+        {"type": "dirichlet", "side": Side.LEFT, "start": 0, "end": h, "values": 40*np.ones(h)},
+        {"type": "dirichlet", "side": Side.RIGHT, "start": 0, "end": h, "values": 40*np.ones(h)},
+        {"type": "dirichlet", "side": Side.LOWER, "start": 0, "end": w, "values": 40*np.ones(w)},
     ]
     res = room.solve(boundaries)
     plot_heatmap(res)

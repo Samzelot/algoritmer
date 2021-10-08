@@ -41,8 +41,40 @@ class Room:
         return np.linalg.solve(self.K, self.f).reshape(self.height, self.width)
 
     def add_neumann(self, side, start_ind, end_ind, values):
-       pass
-            
+        ax_start, dir = SIDES_AXES[side]
+        for i in range(start_ind, end_ind):
+            n = self.v_index(*(ax_start + i*dir))
+            if side==Side.LEFT:
+                c=np.zeros(self.N)
+                c[n]=-3                 # (i, j)
+                c[n+1]=1                # (i, j+1)
+                c[n-self.width]=1       # (i-1,j)
+                c[n+self.width]=1       # (i+1,j)
+                self.K[n,:]=c
+            elif side==Side.RIGHT:
+                c=np.zeros(self.N)
+                c[n]=-3                 # (i, j)
+                c[n-1]=1                # (i, j-1)
+                c[n-self.width]=1       # (i-1,j)
+                c[n+self.width]=1       # (i+1,j)
+                self.K[n,:]=c
+            elif side==Side.UPPER:
+                c=np.zeros(self.N)
+                c[n]=-3                 # (i, j)   
+                c[n-1]=1                # (i, j-1)
+                c[n+1]=1                # (i, j+1)
+                c[n+self.width]=1       # (i-1,j)
+                self.K[n,:]=c
+            else:
+                c=np.zeros(self.N)
+                c[n]=-3                 # (i, j)   
+                c[n-1]=1                # (i, j-1)
+                c[n+1]=1                # (i, j+1)
+                c[n-self.width]=1       # (i+1,j)
+                self.K[n,:]=c
+            self.f[n] = values[i]*self.h
+
+
     def add_dirichlet(self, side, start_ind, end_ind, values):
         ax_start, dir = SIDES_AXES[side]
         for i in range(start_ind, end_ind):
@@ -50,7 +82,7 @@ class Room:
             self.K[n,:] = 0
             self.K[n,n] = 1
             self.f[n] = values[i]
-    
+
     def v_index(self, x,y):
         """Transforms coordinates to index of v"""
         return x + self.width*y
