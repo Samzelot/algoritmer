@@ -11,10 +11,10 @@ class Side(enum.Enum):
 
 SIDES_AXES = {
     #               --- start --- dir ------
-    Side.LEFT: np.array([[0,-1], [0,1]]),     # start_ and direction
-    Side.RIGHT: np.array([[-1,-1],[0,1]]),
-    Side.UPPER: np.array([[0,0], [1,0]]),
-    Side.LOWER: np.array([[0,-1], [1,0]])
+    Side.UPPER: np.array([[-1,0], [-1,0]]),
+    Side.LEFT: np.array([[0,0], [0,1]]),     # start_ and direction
+    Side.LOWER: np.array([[0,-1], [1,0]]),
+    Side.RIGHT: np.array([[-1,-1],[0,-1]]),
 }
 
 class Room:
@@ -37,47 +37,22 @@ class Room:
 
         #type, side, start, end, values
         for b in boundaries:
-            boundary_type[b["type"]](b["side"], b["start"], b["end"], b["values"])      # Runs add_neuman or add_dirichlet 
+            boundary_type[b["type"]](**b)      # Runs add_neuman or add_dirichlet 
         return np.linalg.solve(self.K, self.f).reshape(self.height, self.width)
 
-    def add_neumann(self, side, start_ind, end_ind, values):
+    def add_neumann(self, side, start, end, values, **kwargs):
         ax_start, dir = SIDES_AXES[side]
-        for i in range(start_ind, end_ind):
+        normal = np.array([-dir[1], dir[0]])
+        for i in range(start, end):
             n = self.v_index(*(ax_start + i*dir))
-            if side==Side.LEFT:
-                c=np.zeros(self.N)
-                c[n]=-3                 # (i, j)
-                c[n+1]=1                # (i, j+1)
-                c[n-self.width]=1       # (i-1,j)
-                c[n+self.width]=1       # (i+1,j)
-                self.K[n,:]=c
-            elif side==Side.RIGHT:
-                c=np.zeros(self.N)
-                c[n]=-3                 # (i, j)
-                c[n-1]=1                # (i, j-1)
-                c[n-self.width]=1       # (i-1,j)
-                c[n+self.width]=1       # (i+1,j)
-                self.K[n,:]=c
-            elif side==Side.UPPER:
-                c=np.zeros(self.N)
-                c[n]=-3                 # (i, j)   
-                c[n-1]=1                # (i, j-1)
-                c[n+1]=1                # (i, j+1)
-                c[n+self.width]=1       # (i-1,j)
-                self.K[n,:]=c
-            else:
-                c=np.zeros(self.N)
-                c[n]=-3                 # (i, j)   
-                c[n-1]=1                # (i, j-1)
-                c[n+1]=1                # (i, j+1)
-                c[n-self.width]=1       # (i+1,j)
-                self.K[n,:]=c
+            n_adjacent = [self.v_index(*(ax_start + y*normal + (x + i)*dir)) for x, y in [(-1, 0), (1, 0), (0, -1)]]
+            self.K[n,n] = -3
+            self.K[n,n_adjacent] = 1
             self.f[n] = values[i]*self.h
 
-
-    def add_dirichlet(self, side, start_ind, end_ind, values):
+    def add_dirichlet(self, side, start, end, values, **kwargs):
         ax_start, dir = SIDES_AXES[side]
-        for i in range(start_ind, end_ind):
+        for i in range(start, end):
             n = self.v_index(*(ax_start + i*dir))
             self.K[n,:] = 0
             self.K[n,n] = 1
@@ -85,7 +60,7 @@ class Room:
 
     def v_index(self, x,y):
         """Transforms coordinates to index of v"""
-        return x + self.width*y
+        return x % self.width + self.width*(y % self.height)
         
         
     def K_matrix(self):  # Creates the K matrix.
