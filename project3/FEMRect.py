@@ -2,6 +2,8 @@ import numpy as np
 import scipy.linalg as sclin
 import enum
 import matplotlib.pyplot as plt
+from scipy import sparse
+from scipy.sparse.linalg import spsolve
 
 class Side(enum.Enum):
    LEFT = 1
@@ -28,7 +30,6 @@ class Room:
         self.K = self.K_matrix()
         self.f = np.zeros(self.N)
         
-
     def solve(self, boundaries):
         boundary_type = {
             "neumann": self.add_neumann,
@@ -38,7 +39,7 @@ class Room:
         #type, side, start, end, values
         for b in boundaries:
             boundary_type[b["type"]](**b)      # Runs add_neuman or add_dirichlet 
-        return np.linalg.solve(self.K, self.f).reshape(self.height, self.width)
+        return spsolve(sparse.csr_matrix(self.K), self.f).reshape(self.height, self.width)
 
     def add_neumann(self, side, start, end, values, **kwargs):
         ax_start, dir = SIDES_AXES[side]
@@ -46,6 +47,7 @@ class Room:
         for i in range(start, end):
             n = self.v_index(*(ax_start + i*dir))
             n_adjacent = [self.v_index(*(ax_start + y*normal + (x + i)*dir)) for x, y in [(-1, 0), (1, 0), (0, -1)]]
+            self.K[n,:] = 0
             self.K[n,n] = -3
             self.K[n,n_adjacent] = 1
             self.f[n] = values[i]*self.h
@@ -64,23 +66,13 @@ class Room:
         
         
     def K_matrix(self):  # Creates the K matrix.
-        c=np.zeros(self.N)
-        c[0]=-4             # (i, j)   
-        c[1]=1              # (i+1, j)
-        c[self.width]=1     # (i, j+1)
-        c[(self.height-1)*self.width]=1  # (i-1,j)
-        c[-1]=1             # (i,j-1)
 
-        K=sclin.circulant(c)    # Fills all rows.
-
-        boundary_indexes = np.concatenate((   # Boundary indexes
-            np.arange(0, self.width),
-            -np.arange(0, self.width) - 1,
-            np.arange(0, self.width*self.height, self.width),
-            np.arange(self.width - 1, self.width*self.height, self.width)
-        ))
-        K[boundary_indexes,:] = 0   # Sets all "boundary rows" to zero
-        return K
+        off_diag_values = np.array([1, 1, 1, 1])
+        off_diag_offsets = np.array([1, self.width, (self.height-1)*self.width, self.N - 1])
+        mirrored_values = np.concatenate((off_diag_values, [-4], np.flip(off_diag_values)))
+        mirrored_offsets = np.concatenate((off_diag_offsets, [0], -off_diag_offsets))
+        K_sp = sparse.diags(mirrored_values, mirrored_offsets, shape=(self.N, self.N), format='lil')
+        return K_sp
         
 def plot_heatmap(f): #task 3, plot the heatmap
     plt.imshow(f, cmap='hot')

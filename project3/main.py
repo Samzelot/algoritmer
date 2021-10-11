@@ -1,6 +1,8 @@
 #from mpi4py import MPI
 from FEMRect import Room, Side, plot_heatmap
 import numpy as np
+import mpi4py as MPI
+
 np.set_printoptions(threshold=np.inf, linewidth=np.inf)
 
 def aa(width,height,h):
