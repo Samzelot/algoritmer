@@ -2,6 +2,7 @@
 from Room import Room, Side, plot_heatmap
 import numpy as np
 from mpi4py import MPI
+import matplotlib.pyplot as plt
 
 np.set_printoptions(threshold=np.inf, linewidth=np.inf)
 
@@ -97,21 +98,24 @@ def right_room():
    
 def main():
     
-    # w = 20
-    # h = 40
-    # room = Room(w, h, 1/(w - 1))
-    # boundaries = [
-    #     {"type": "dirichlet", "side": Side.UPPER, "start": 0, "end": w, "values": 40*np.ones(w)},
-    #     {"type": "dirichlet", "side": Side.LOWER, "start": 0, "end": w, "values": 5*np.ones(w)},
-    #     {"type": "dirichlet", "side": Side.LEFT, "start": 0, "end": 20, "values": 15*np.ones(20)}, #upper part left side
-    #     {"type": "neumann", "side": Side.LEFT, "start": 20, "end": h - 1, "values": np.zeros(h - 21)}, #lower part left side
-    #     {"type": "dirichlet", "side": Side.RIGHT, "start": 0, "end": 20, "values": 15*np.ones(20)}, #lower part right side
-    #     {"type": "neumann", "side": Side.RIGHT, "start": 20, "end": h - 1, "values": np.zeros(h - 21)}, #upper part right side
-    # ]
+    w = 20
+    h = 40
+    boundaries = [
+        {"type": "dirichlet", "side": Side.UPPER, "start": 0, "end": w, "values": 40*np.ones(w)},
+        {"type": "dirichlet", "side": Side.LOWER, "start": 0, "end": w, "values": 5*np.ones(w)},
+        {"type": "dirichlet", "side": Side.LEFT, "start": 0, "end": 20, "values": 15*np.ones(20)}, #upper part left side
+        {"type": "dirichlet", "side": Side.RIGHT, "start": 0, "end": 20, "values": 15*np.ones(20)}, #lower part right side
+    ]
+    room = Room(w, h, 1/(w - 1), boundaries)
+    temp = [
+        {"type": "neumann", "side": Side.LEFT, "start": 20, "end": h, "values": np.zeros(h - 20)}, #lower part left side
+        {"type": "neumann", "side": Side.RIGHT, "start": 20, "end": h, "values": np.zeros(h - 20)}, #upper part right side
+    ]
 
-    # res = room.solve(boundaries)
-    room1, room2, room3 =  test()
-    plot_heatmap(room1, room2, room3)
+    res = room.solve(temp)
+    plt.imshow(res, cmap='hot')
+    plt.colorbar()
+    plt.show()
 
 #run from command line "mpiexec -n numprocs python -m mpi4py pyfile "
 def test(): 
@@ -190,6 +194,5 @@ def test():
 
 if __name__ == "__main__":
     main()
-    test()
 
 
