@@ -29,36 +29,34 @@ class Room:
 
         self.K = self.K_matrix()
         self.f = np.zeros(self.N)
-        
-    def solve(self, boundaries):
+    
+    def set_boundaries(self, boundaries):
         boundary_type = {
             "neumann": self.add_neumann,
             "dirichlet": self.add_dirichlet,
         }
-
         #type, side, start, end, values
         for b in boundaries:
             boundary_type[b["type"]](**b)      # Runs add_neuman or add_dirichlet 
+
+    def solve(self):
         return spsolve(sparse.csr_matrix(self.K), self.f).reshape(self.height, self.width)
 
     def add_neumann(self, side, start, end, values, **kwargs):
+        self.add_boundary_cond(side, start, end, values, [1, -1, self.h])
+    
+    def add_boundary_cond(self, side, start, end, values, kernel):
         ax_start, dir = SIDES_AXES[side]
         normal = np.array([-dir[1], dir[0]])
         for i in range(start, end):
-            n = self.v_index(*(ax_start + i*dir))
-            n_adjacent = [self.v_index(*(ax_start + y*normal + (x + i)*dir)) for x, y in [(-1, 0), (1, 0), (0, -1)]]
-            self.K[n,:] = 0
-            self.K[n,n] = -3
-            self.K[n,n_adjacent] = 1
-            self.f[n] = values[i]*self.h
+            n = self.v_index(*(ax_start + i*dir)) #n, gives v_index around the axis we are stepping in (dir)
+            n_adjacent = self.v_index(*(ax_start - normal + i*dir)) #finds adjacant v_indeces around current v_inxdex (n)
+            self.K[n,n_adjacent] += kernel[0] # add element to adjacent v_indeces, dependent on condition
+            self.K[n,n] += kernel[1] #Diagonal element add, finite diff approx coefficient
+            self.f[n] += values[i - start]*kernel[2]
 
     def add_dirichlet(self, side, start, end, values, **kwargs):
-        ax_start, dir = SIDES_AXES[side]
-        for i in range(start, end):
-            n = self.v_index(*(ax_start + i*dir))
-            self.K[n,:] = 0
-            self.K[n,n] = 1
-            self.f[n] = values[i]
+        self.add_boundary_cond(side, start, end, values, [1, -2, 1])
 
     def v_index(self, x,y):
         """Transforms coordinates to index of v"""
@@ -72,10 +70,20 @@ class Room:
         mirrored_values = np.concatenate((off_diag_values, [-4], np.flip(off_diag_values)))
         mirrored_offsets = np.concatenate((off_diag_offsets, [0], -off_diag_offsets))
         K_sp = sparse.diags(mirrored_values, mirrored_offsets, shape=(self.N, self.N), format='lil')
+        
+
+        self.add_boundary_cond(Side.LEFT, 0, self.height, np.ones(), kernel)
+
         return K_sp
         
-def plot_heatmap(f): #task 3, plot the heatmap
-    plt.imshow(f, cmap='hot')
+def plot_heatmap(room1, room2, room3): #task 3, plot the heatmap
+    A=np.ones(60, 40)-100
+
+    A[20:,0:20]=room1
+    A[:20, 40:60]=room3
+    A[:, 20:40]=room2
+
+    plt.imshow(A, cmap='hot')
     plt.colorbar()
     plt.show()
 
