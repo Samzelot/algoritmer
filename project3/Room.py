@@ -40,10 +40,10 @@ class Room:
         for b in boundaries:
             boundary_type[b["type"]](K, f, **b)      # Runs add_neuman or add_dirichlet 
 
-    def solve(self, boundaries):
+    def solve(self, temp_boundaries):
         K_temp = self.K.copy()
         f_temp = self.f.copy()
-        self.set_boundaries(K_temp, f_temp, boundaries)
+        self.set_boundaries(K_temp, f_temp, temp_boundaries)
         return spsolve(sparse.csr_matrix(K_temp), f_temp).reshape(self.height, self.width)
 
     def add_neumann(self, K, f, side, start, end, values, **kwargs):

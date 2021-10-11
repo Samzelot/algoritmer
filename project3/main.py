@@ -113,7 +113,7 @@ def main():
     ]
 
     res = room.solve(temp)
-    plt.imshow(res, cmap='hot')
+    plt.imshow(res, cmap='hot', vmin=0, vmax=50)
     plt.colorbar()
     plt.show()
 
