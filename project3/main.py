@@ -33,8 +33,8 @@ def main(omega = 0.8):
     comm = MPI.Comm.Clone(MPI.COMM_WORLD)
     rank = comm.Get_rank()
 
-    width = 20
-    height = 20
+    width = 40
+    height = 40
     h = 1/(width - 1)
 
     #Initialize
@@ -60,7 +60,7 @@ def main(omega = 0.8):
     ]
     room_3 = Room(width,height,h,boundaries3)
     
-    iters = 2
+    iters = 10
     for i in range(iters):
         if rank == 0: #room 1
             left_border_room_2 = np.flip(comm.recv(source=2))
@@ -90,16 +90,18 @@ def main(omega = 0.8):
                 {"type": "dirichlet", "side": Side.LEFT, "start": height, "end": height*2, "values": dir_room_1_border}, #lower part left side
                 {"type": "dirichlet", "side": Side.RIGHT, "start": height, "end": height*2, "values": dir_room_3_border}, #upper part right side
             ]
+            room_2_prev=np.ones((height*2, width))*15
+
+            if i > 0:
+                room_2_prev=room_2_temps
+
             room_2_temps=room_2.solve(boundaries2)
-
-            u_knext2_left = room_2_temps[height:,0] #get gamma
-            u_sol2_left = omega*u_knext2_left + (1-omega)*dir_room_1_border # relaxation, uses next iterate and previous
-
-            u_knext2_right = room_2_temps[:height,-1] #get gamma
-            u_sol2_right = omega*u_knext2_right + (1-omega)*dir_room_3_border # relaxation, uses next iterate and previous
             
-            comm.send((dir_room_1_border - u_knext2_left), dest=0) #lower left wall to room 1
-            comm.send((dir_room_3_border - u_knext2_right), dest=1) #upper right wall to room 3
+
+            u_sol = omega*room_2_temps + (1-omega)*room_2_prev # relaxation, uses next iterate and previous
+            
+            comm.send((u_sol[height:,0]-u_sol[height:,1])/-h, dest=0) #lower left wall to room 1
+            comm.send((u_sol[:height,-1] - u_sol[:height,-2])/-h, dest=1) #upper right wall to room 3
 
             if i == iters-1:
                 room_1_temps = comm.recv(source=0)
