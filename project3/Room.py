@@ -56,8 +56,8 @@ class Room:
         ax_start, dir = SIDES_AXES[side]
         normal = np.array([-dir[1], dir[0]])
         for i in range(start, end):
-            n = self.v_index(*(ax_start + i*dir)) #n, gives v_index around the axis we are stepping in (dir)
-            n_adjacent = self.v_index(*(ax_start - normal + i*dir)) #finds adjacant v_indeces around current v_inxdex (n)
+            n = self.v_index(*(ax_start + i*dir)) #n, gives v_index on the axis we are stepping in (dir) (boundary node)
+            n_adjacent = self.v_index(*(ax_start - normal + i*dir)) #finds adjacant v_index around current boundary node (n)
             K[n,n_adjacent] += kernel[0] # add element to adjacent v_indeces, dependent on condition
             K[n,n] += kernel[1] #Diagonal element add, finite diff approx coefficient
             f[n] += values[i - start]*kernel[2]
@@ -79,11 +79,11 @@ class Room:
         return K
         
 def plot_heatmap(room1, room2, room3): #task 3, plot the heatmap
-    A=np.ones(60, 40)-100
+    A=np.zeros((40, 60))
 
-    A[20:,0:20]=room1
-    A[:20, 40:60]=room3
-    A[:, 20:40]=room2
+    A[20:,:20]=room1
+    A[:,20:40]=room2
+    A[:20,40:]=room3
 
     plt.imshow(A, cmap='hot')
     plt.colorbar()

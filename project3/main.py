@@ -5,98 +5,8 @@ from mpi4py import MPI
 import matplotlib.pyplot as plt
 
 np.set_printoptions(threshold=np.inf, linewidth=np.inf)
-
-def aa(room, boundaries):
-    comm = MPI.Comm.Clone(MPI.COMM_WORLD)
-    rank = comm.Get_rank()
-
-    width = 20
-    height = 20
-
-    #Initialize
-    room_1 = Room(width,height,h)
-    room_2 = Room(width,height*2,h)
-    room_3 = Room(width,height,h)
-
-    boundaries1 = [
-        {"type": "dirichlet", "side": Side.UPPER, "start": 0, "end": width, "values": 40*np.ones(width)},
-        {"type": "dirichlet", "side": Side.LOWER, "start": 0, "end": width, "values": 5*np.ones(width)},
-        {"type": "dirichlet", "side": Side.LEFT, "start": 0, "end": height, "values": 15*np.ones(height)}, #upper part left side
-    ]
-    room_1.set_boundaries(boundaries1)
-
-    boundaries2 = [
-        {"type": "dirichlet", "side": Side.UPPER, "start": 0, "end": width, "values": 40*np.ones(width)},
-        {"type": "dirichlet", "side": Side.LOWER, "start": 0, "end": width, "values": 5*np.ones(width)},
-        {"type": "dirichlet", "side": Side.LEFT, "start": 0, "end": height, "values": 15*np.ones(height)}, #upper part left side
-        #{"type": "neumann", "side": Side.LEFT, "start": 20, "end": h - 1, "values": np.zeros(h - 21)}, #lower part left side
-        {"type": "dirichlet", "side": Side.RIGHT, "start": 0, "end": height, "values": 15*np.ones(height)}, #lower part right side
-        #{"type": "neumann", "side": Side.RIGHT, "start": 20, "end": h - 1, "values": np.zeros(h - 21)}, #upper part right side
-    ]
-    room_2.set_boundaries(boundaries2)
-
-    boundaries3 = [
-        {"type": "dirichlet", "side": Side.UPPER, "start": 0, "end": width, "values": 40*np.ones(width)},
-        {"type": "dirichlet", "side": Side.LOWER, "start": 0, "end": width, "values": 5*np.ones(width)},
-        {"type": "dirichlet", "side": Side.RIGHT, "start": 0, "end": height, "values": 15*np.ones(height)}, #upper part left side
-    ]
-    room_3.set_boundaries(boundaries3)
-
-    #TODO: Create 3 discrete vectors u_1,u_2,u_3 as initial vectors
-    # u_1,u_2,u_3 = np.array([]), np.array([]), np.array([])
-
-    # relationships = {
-    #     0: {"adjacent": [1], "room": Room()},
-    #     1: {"adjacent": [0, 2], "room": Room()},
-    #     2: {"adjacent": [1], "room": right_room},
-    # }
-
-
-    for i in range(10):# 10 iterations
     
-        if rank == 0: # room 1
-
-            left_border_room_2 = comm.recv(source=1) # get u_1 from room_2
-            
-
-            boundaries1 = [{"type": "dirichlet", "side": Side.RIGHT, "start": 0, "end": height, "values": left_border_room_2}]
-            room_1.set_boundaries(boundaries1)
-
-            border_room_1 = room_1.solve()[:,-1][1:-2]
-
-            comm.send(border_room_1,dest=1)
-
-        if rank == 1: #room 2
-            if i == 0:
-                temperatures = room_2.solve()
-                room_2_boarder_to_1 = None
-                room_2_boarder_to_3 = None
-
-            room_1_boarder = comm.recv(source=0)    # boarder of room 1
-            room_3_boarder = comm.recv(source=2)    # boarder of room 2
-            temperatures = room_2.solve()           # TODO
-            room_2_boarder_to_1 = None              # TODO
-            room_2_boarder_to_3 = None              # TODO
-            
-            
-            comm.send(room_2_boarder_1, dest = 0)
-            comm.send(room_2_boarder_2, dest = 2)
-            
-        if rank == 2: # room 3
-            room_2_boarder_2 = comm.recv(source=1)
-            #room_3_boarder = ? - run algorithm
-            data = comm.recv(source=0)
-            
-
-def left_room(border, comm):
-    pass
-    
-def center_room():
-    pass
-def right_room():
-    pass
-   
-def main():
+def test():
     
     w = 20
     h = 40
@@ -118,79 +28,84 @@ def main():
     plt.show()
 
 #run from command line "mpiexec -n numprocs python -m mpi4py pyfile "
-def test(): 
+
+def main(omega = 0.8): 
     comm = MPI.Comm.Clone(MPI.COMM_WORLD)
     rank = comm.Get_rank()
 
     width = 20
     height = 20
+    h = 1/(width - 1)
 
     #Initialize
-    room_1 = Room(width,height,h)
-    room_2 = Room(width,height*2,h)
-    room_3 = Room(width,height,h)
-
     boundaries1 = [
-        {"type": "dirichlet", "side": Side.UPPER, "start": 0, "end": width, "values": 40*np.ones(width)},
-        {"type": "dirichlet", "side": Side.LOWER, "start": 0, "end": width, "values": 5*np.ones(width)},
-        {"type": "dirichlet", "side": Side.LEFT, "start": 0, "end": height, "values": 15*np.ones(height)}, #upper part left side
+        {"type": "dirichlet", "side": Side.UPPER, "start": 0, "end": width, "values": 15*np.ones(width)},
+        {"type": "dirichlet", "side": Side.LOWER, "start": 0, "end": width, "values": 15*np.ones(width)},
+        {"type": "dirichlet", "side": Side.LEFT, "start": 0, "end": height, "values": 40*np.ones(height)}, #upper part left side
     ]
-    room_1.set_boundaries(boundaries1)
+    room_1 = Room(width,height,h, boundaries1)
 
     boundaries2 = [
         {"type": "dirichlet", "side": Side.UPPER, "start": 0, "end": width, "values": 40*np.ones(width)},
         {"type": "dirichlet", "side": Side.LOWER, "start": 0, "end": width, "values": 5*np.ones(width)},
         {"type": "dirichlet", "side": Side.LEFT, "start": 0, "end": height, "values": 15*np.ones(height)}, #upper part left side
-        #{"type": "neumann", "side": Side.LEFT, "start": 20, "end": h - 1, "values": np.zeros(h - 21)}, #lower part left side
         {"type": "dirichlet", "side": Side.RIGHT, "start": 0, "end": height, "values": 15*np.ones(height)}, #lower part right side
-        #{"type": "neumann", "side": Side.RIGHT, "start": 20, "end": h - 1, "values": np.zeros(h - 21)}, #upper part right side
     ]
-    room_2.set_boundaries(boundaries2)
+    room_2 = Room(width,height*2,h, boundaries2)
 
     boundaries3 = [
-        {"type": "dirichlet", "side": Side.UPPER, "start": 0, "end": width, "values": 40*np.ones(width)},
-        {"type": "dirichlet", "side": Side.LOWER, "start": 0, "end": width, "values": 5*np.ones(width)},
-        {"type": "dirichlet", "side": Side.RIGHT, "start": 0, "end": height, "values": 15*np.ones(height)}, #upper part left side
+        {"type": "dirichlet", "side": Side.UPPER, "start": 0, "end": width, "values": 15*np.ones(width)},
+        {"type": "dirichlet", "side": Side.LOWER, "start": 0, "end": width, "values": 15*np.ones(width)},
+        {"type": "dirichlet", "side": Side.RIGHT, "start": 0, "end": height, "values": 40*np.ones(height)}, #upper part left side
     ]
-    room_3.set_boundaries(boundaries3)
-    for i in range(10):
-        if rank == 0: #room 1 and 3
-            if i == 0: # first iteration, guess initial values
-                left_border_room_2=40*np.ones(height)
-            else: # use solution from room_2
-                left_border_room_2 = comm.recv(source=1)
-            
-            boundaries1 = [{"type": "dirichlet", "side": Side.RIGHT, "start": 0, "end": height, "values": left_border_room_2}] 
-            room_1.set_boundaries(boundaries1) # set guess as boundaries
-            border_room_1 = room_1.solve() #solution
-            comm.send(border_room_1[:,-1][1:-2], dest=2) #send solution to room_2 core
-
-        if rank ==1:
-            if i == 0:
-                right_border_room_2 = 40*np.ones(height)
-            else:
-                right_border_room_2 = comm.recv(source=1)
-            
-            boundaries3 = [{"type": "dirichlet", "side": Side.LEFT, "start": 0, "end": height, "values": right_border_room_2}]
-            room_3.set_boundaries(boundaries3)
-            border_room_3 = room_3.solve()
-            comm.send(border_room_3[:,1][1:-2], dest=2)
-
-        if rank==2:
-            dir_room_1_border = comm.recv(source=0)
-            dir_room_3_border = comm.recv(source=1)
-
-            boundaries2 = [ #TODO: use neumann
-                {"type": "dirichlet", "side": Side.LEFT, "start": 20, "end": height - 1, "values": dir_room_1_border},
-                {"type": "dirichlet", "side": Side.RIGHT, "start": 20, "end": height - 1, "values": dir_room_3_border}, #upper part right side#lower part left side
-            ]
-            room_2.set_boundaries(boundaries2) 
-            border_room_2=room_2.solve()
-            
-            comm.send(border_room_2[:,1][20:height-1], dest=0)
-            comm.send(border_room_2[:,-1][20:height-1], dest=1)
+    room_3 = Room(width,height,h,boundaries3)
     
-    return border_room_1, border_room_2, border_room_3
+    iters = 2
+    for i in range(iters):
+        if rank == 0: #room 1
+            left_border_room_2 = np.flip(comm.recv(source=2))
+            
+            boundaries1 = [{"type": "neumann", "side": Side.RIGHT, "start": 0, "end": height, "values":left_border_room_2}] 
+
+            room_1_temps = room_1.solve(boundaries1) #solution
+
+            #u_knext1 = border_room_1[:,-1][1:-2] #get gamma
+            #u_sol1 = omega*u_knext1 + (1-omega)*left_border_room_2[:,-1][1:-2] # relaxation, uses next iterate and previous
+            comm.send(room_1_temps[:,-1], dest=2) if i != iters-1 else comm.send(room_1_temps, dest=2) #send solution to room_2 core
+
+        if rank ==1: # room 3
+            right_border_room_2 = comm.recv(source=2)
+            
+            boundaries3 = [{"type": "neumann", "side": Side.LEFT, "start": 0, "end": height, "values": right_border_room_2}]
+            room_3_temps = room_3.solve(boundaries3)
+
+            #u_knext3 = border_room_3[:,-1][1:-2] #get gamma
+            #u_sol3 = omega*u_knext3 + (1-omega)*right_border_room_2[:,-1][1:-2] # relaxation, uses next iterate and previous
+            comm.send(room_3_temps[:,0], dest=2) if i != iters-1 else comm.send(room_3_temps, dest=2) #send solution to room_2 core
+
+        if rank==2: # room 2
+            dir_room_1_border = 10*np.ones(height) if i == 0 else comm.recv(source=0)
+            dir_room_3_border = np.flip(10*np.ones(height) if i == 0 else comm.recv(source=1))
+            boundaries2 = [
+                {"type": "dirichlet", "side": Side.LEFT, "start": height, "end": height*2, "values": dir_room_1_border}, #lower part left side
+                {"type": "dirichlet", "side": Side.RIGHT, "start": height, "end": height*2, "values": dir_room_3_border}, #upper part right side
+            ]
+            room_2_temps=room_2.solve(boundaries2)
+
+            u_knext2_left = room_2_temps[height:,0] #get gamma
+            u_sol2_left = omega*u_knext2_left + (1-omega)*dir_room_1_border # relaxation, uses next iterate and previous
+
+            u_knext2_right = room_2_temps[:height,-1] #get gamma
+            u_sol2_right = omega*u_knext2_right + (1-omega)*dir_room_3_border # relaxation, uses next iterate and previous
+            
+            comm.send((dir_room_1_border - u_knext2_left), dest=0) #lower left wall to room 1
+            comm.send((dir_room_3_border - u_knext2_right), dest=1) #upper right wall to room 3
+
+            if i == iters-1:
+                room_1_temps = comm.recv(source=0)
+                room_3_temps = comm.recv(source=1)
+                plot_heatmap(room_1_temps, room_2_temps, room_3_temps)
+                
 
 if __name__ == "__main__":
     main()
