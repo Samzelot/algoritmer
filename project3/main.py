@@ -33,9 +33,9 @@ def main(omega = 0.8):
     comm = MPI.Comm.Clone(MPI.COMM_WORLD)
     rank = comm.Get_rank()
 
-    width = 40
-    height = 40
-    h = 1/(width - 1)
+    width = 20
+    height = 20
+    h = 1/(width)
 
     #Initialize
     boundaries1 = [

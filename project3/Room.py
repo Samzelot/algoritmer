@@ -79,11 +79,11 @@ class Room:
         return K
         
 def plot_heatmap(room1, room2, room3): #task 3, plot the heatmap
-    A=np.zeros((80, 120))
+    A=np.zeros((40, 60))
 
-    A[40:,:40]=room1
-    A[:,40:80]=room2
-    A[:40,80:]=room3
+    A[20:,:20]=room1
+    A[:,20:40]=room2
+    A[:20,40:]=room3
 
     plt.imshow(A, cmap='hot')
     plt.colorbar()
